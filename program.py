@@ -11,7 +11,7 @@ class Robby:
 def generateStrategies(n):
     strategies=[]
     for strategy in range(n):
-        randomlist = [random.randint(0,6)  for number in range(n)]
+        randomlist = [random.randint(0,6)  for number in range(243)]
         strategies.append(randomlist)
     return strategies
 
