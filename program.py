@@ -50,7 +50,7 @@ def run():
         fitness/=cleaningSessions
         fitnessValues.append(fitness)  
     maxFitness.append(max(fitnessValues)) #for painting
-    np.random.choice(fitnessValues, 1000, p=[0.1, 0.2, 0.3, 0.4])
+    np.random.choice(strategies, 2, p=[0.1, 0.2, 0.3, 0.4])
 
 
 def getNorth(position,board):
