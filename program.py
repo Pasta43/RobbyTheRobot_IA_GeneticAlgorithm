@@ -30,8 +30,13 @@ def run():
     perceptions= [list(element) for element in itertools.product(*somelists)]
     i=0
     while i<len(perceptions):
+        c = 0
         for status in perceptions[i]:
-            perceptions.remove(status)
+            if status == 2:
+                c = c + 1
+                if c > 2 or perceptions[i][4] == 2:
+                    perceptions.remove(perceptions[i]) 
+        i=i+1
 
     firstStrategies = generateStrategies(200,len(perceptions))
     strategies= firstStrategies
