@@ -2,10 +2,10 @@ import random
 import itertools
 
 start=(0,0)
-def generateStrategies(n):
+def generateStrategies(n,length):
     strategies=[]
     for strategy in range(n):
-        randomlist = [random.randint(0,6)  for number in range(243)]
+        randomlist = [random.randint(0,6)  for number in range(length)]
         strategies.append(randomlist)
     return strategies
 def generateBoard():
@@ -19,16 +19,21 @@ def generateBoard():
 def run():
     """
     Main function
-    It considers the following aspects:
+    It considers the following aspects to execute the genetic algorithm:
     - The status of the cell is defined for the numbers  0: empty, 1: can: 2: wall
-    - The id of the neighbor cells are defined for ; 0: north, 1: south, 2: west, 3: east, 4: north, 5:current site
-
+    - The id of the neighbor cells are defined for ; 0: north, 1: south, 2: west, 3: east, 4: current site
+    - The actions based on the strategy are: 0: MoveNorth, 1: MoveSouth, 2: MoveWest, 3: MoveEast, 4: StayPut, 5: PickUp, 6: MoveRandom 
     """
     numberOfActions=200
     cleaningSessions=100
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
-    firstStrategies = generateStrategies(200)
+    i=0
+    while i<len(perceptions):
+        for status in perceptions[i]:
+            perceptions.remove(status)
+
+    firstStrategies = generateStrategies(200,len(perceptions))
     strategies= firstStrategies
     for strategy in strategies:
         fitness=0
@@ -44,41 +49,64 @@ def run():
                                 ]
                 status=perceptions.index(actualPerception)
                 action=strategy[status]
+                if action==0:
+                    newPos=(position[0],position[1]-1)
+                    if(newPos[1]<0):
+                        fitness-=5
+                        newPos = position
+                elif action==1:
+                    newPos=(position[0],position[1]+1)
+                    if(newPos[1]>9):
+                        fitness-=5
+                        newPos = position
+                elif action==2:
+                    newPos = (position[0]-1,position[1])
+                    if(newPos[0]<0):
+                        fitness-=5
+                        newPos = position
+                    
+                elif action==3:
+                    newPos = (position[0]+1,position[1])
+                    if(newPos[0]>9):
+                        fitness-=5
+                        newPos = position
+                elif action==4:
+                    pass                    
+                elif action==5:
+                    newPos = position
+                    if(board[position[0]][position[1]]):
+                        fitness+=10
+                        board[position[0]][position[1]]=0
+                    else:
+                        fitness-=1
+                elif action==6:
+                    randAction = random.randint(0,4)
+
 
 def getNorth(position,board):
     newPos = (position[0],position[1]-1)
     if(newPos[1]<0):
         return 2
-    elif(board[newPos[0]][newPos[1]]):
-        return 1
-    return 0
+    return board[newPos[0]][newPos[1]]
 def getSouth(position,board):
     newPos = (position[0],position[1]+1)
     if(newPos[1]>9):
         return 2
-    elif(board[newPos[0]][newPos[1]]):
-        return 1
-    return 0
+    return board[newPos[0]][newPos[1]]
 def getWest(position,board):
     newPos = (position[0]-1,position[1])
     if(newPos[1]<0):
         return 2
-    elif(board[newPos[0]][newPos[1]]):
-        return 1
-    return 0
+    return board[newPos[0]][newPos[1]]
 def getEast(position,board):
     newPos = (position[0]+1,position[1])
     if(newPos[1]>9):
         return 2
-    elif(board[newPos[0]][newPos[1]]):
-        return 1
-    return 0
+    return board[newPos[0]][newPos[1]]
 def getCurrent(position,board):
     if(position[0]>9 or position[1]>9 or position[0]<0 or position[1]<0):
         return 2
-    elif(board[position[0]][position[1]]):
-        return 1
-    return 0
+    return board[position[0]][position[1]]
 def getSouth(position):
     pass
 def getWest(position):
