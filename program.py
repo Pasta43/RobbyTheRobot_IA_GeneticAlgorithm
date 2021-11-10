@@ -1,6 +1,6 @@
 import random
 import itertools
-
+import numpy as np
 start=(0,0)
 def generateStrategies(n,length):
     strategies=[]
@@ -28,13 +28,10 @@ def run():
     cleaningSessions=100
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
-    i=0
-    while i<len(perceptions):
-        for status in perceptions[i]:
-            perceptions.remove(status)
-
     firstStrategies = generateStrategies(200,len(perceptions))
     strategies= firstStrategies
+    maxFitness=[]
+    fitnessValues=[]
     for strategy in strategies:
         fitness=0
         for sesion in range(cleaningSessions):
@@ -49,38 +46,11 @@ def run():
                                 ]
                 status=perceptions.index(actualPerception)
                 action=strategy[status]
-                if action==0:
-                    newPos=(position[0],position[1]-1)
-                    if(newPos[1]<0):
-                        fitness-=5
-                        newPos = position
-                elif action==1:
-                    newPos=(position[0],position[1]+1)
-                    if(newPos[1]>9):
-                        fitness-=5
-                        newPos = position
-                elif action==2:
-                    newPos = (position[0]-1,position[1])
-                    if(newPos[0]<0):
-                        fitness-=5
-                        newPos = position
-                    
-                elif action==3:
-                    newPos = (position[0]+1,position[1])
-                    if(newPos[0]>9):
-                        fitness-=5
-                        newPos = position
-                elif action==4:
-                    pass                    
-                elif action==5:
-                    newPos = position
-                    if(board[position[0]][position[1]]):
-                        fitness+=10
-                        board[position[0]][position[1]]=0
-                    else:
-                        fitness-=1
-                elif action==6:
-                    randAction = random.randint(0,4)
+                fitness,board,position= applyAction(action,fitness,board,position)
+        fitness/=cleaningSessions
+        fitnessValues.append(fitness)  
+    maxFitness.append(max(fitnessValues)) #for painting
+    np.random.choice(fitnessValues, 1000, p=[0.1, 0.2, 0.3, 0.4])
 
 
 def getNorth(position,board):
@@ -107,14 +77,41 @@ def getCurrent(position,board):
     if(position[0]>9 or position[1]>9 or position[0]<0 or position[1]<0):
         return 2
     return board[position[0]][position[1]]
-def getSouth(position):
-    pass
-def getWest(position):
-    pass
-def getEast(position):
-    pass
-def getCurrent(position):
-    pass
+
+def applyAction(action,fitness,board,position):
+    if action==0:
+        newPos=(position[0],position[1]-1)
+        if(newPos[1]<0):
+            fitness-=5
+            newPos = position
+    elif action==1:
+        newPos=(position[0],position[1]+1)
+        if(newPos[1]>9):
+            fitness-=5
+            newPos = position
+    elif action==2:
+        newPos = (position[0]-1,position[1])
+        if(newPos[0]<0):
+            fitness-=5
+            newPos = position
+    elif action==3:
+        newPos = (position[0]+1,position[1])
+        if(newPos[0]>9):
+            fitness-=5
+            newPos = position
+    elif action==4:
+        newPos = position                    
+    elif action==5:
+        newPos = position
+        if(board[position[0]][position[1]]):
+            fitness+=10
+            board[position[0]][position[1]]=0
+        else:
+            fitness-=1
+    elif action==6:
+        randAction = random.randint(0,3)
+        return applyAction(randAction,fitness,board,position)
+    return (fitness,board,newPos)
 
 if __name__ == '__main__':
     run()
