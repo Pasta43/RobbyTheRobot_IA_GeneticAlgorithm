@@ -1,7 +1,9 @@
 import random
 import itertools
 import numpy as np
+from scipy.stats import poisson
 start=(0,0)
+probabilities =[1-poisson.cdf(k=i,mu=1) for i in range(200)]
 def generateStrategies(n,length):
     strategies=[]
     for strategy in range(n):
