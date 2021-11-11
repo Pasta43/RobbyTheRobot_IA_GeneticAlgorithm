@@ -42,27 +42,35 @@ def run():
     firstStrategies = generateStrategies(200,len(perceptions))
     strategies= firstStrategies
     maxFitness=[]
-    fitnessValues=[]
-    for strategy in strategies:
-        fitness=0
-        for sesion in range(cleaningSessions):
-            position=list(start)  
-            board = generateBoard()     
-            for iteration in range(numberOfActions):
-                actualPerception=[getNorth(position,board),
-                                getSouth(position,board),
-                                getWest(position,board),
-                                getEast(position,board),
-                                getCurrent(position,board)
-                                ]
-                status=perceptions.index(actualPerception)
-                action=strategy[status]
-                fitness,board,position= applyAction(action,fitness,board,position)
-        fitness/=cleaningSessions
-        fitnessValues.append(fitness)  
-    maxFitness.append(max(fitnessValues)) #for painting
-    np.random.choice(strategies, 2, p=[0.1, 0.2, 0.3, 0.4])
-
+    population=[]
+    for generation in range(1000):
+        for strategy in strategies:
+            fitness=0
+            for sesion in range(cleaningSessions):
+                position=list(start)  
+                board = generateBoard()     
+                for iteration in range(numberOfActions):
+                    actualPerception=[getNorth(position,board),
+                                    getSouth(position,board),
+                                    getWest(position,board),
+                                    getEast(position,board),
+                                    getCurrent(position,board)
+                                    ]
+                    status=perceptions.index(actualPerception)
+                    action=strategy[status]
+                    fitness,board,position= applyAction(action,fitness,board,position)
+            fitness/=cleaningSessions
+            population.append((strategy,fitness))
+        population.sort(reverse=True,key=lambda y: y[1])
+        maxFitness.append(population[0][1]) #for painting
+        newStrategies=[]
+        while(len(newStrategies)<200):
+            father,mother=np.random.choice(population, 2, p=probabilities)
+            children = mate(father[0],mother[0])
+            newStrategies.append(children[0])
+            newStrategies.append(children[1])
+        strategies=newStrategies
+        population=[]
 
 def getNorth(position,board):
     newPos = (position[0],position[1]-1)
@@ -123,6 +131,17 @@ def applyAction(action,fitness,board,position):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position)
     return (fitness,board,newPos)
+def mate(father,mother):
+    genXY,genXX=father,mother
+    num=random.randint(0,len(father)-1)
+    children=[
+        genXY[:num]+genXX[num:],
+        genXX[:num]+genXY[num:]
+    ]
+    for i in range(len(children)):
+        if(random.random()<0.01): # Mutation
+            children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
+    return children
 
 if __name__ == '__main__':
     run()
