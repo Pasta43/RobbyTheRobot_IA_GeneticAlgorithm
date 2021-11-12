@@ -1,9 +1,17 @@
 import random
 import itertools
 import numpy as np
-from scipy.stats import poisson
+import time
+import csv
+import plotly.express as px
+import pandas as pd
+
+
+
 start=(0,0)
-probabilities =[poisson.pmf(k=i,mu=1) for i in range(200)]
+
+
+
 def generateStrategies(n,length):
     strategies=[]
     for strategy in range(n):
@@ -18,7 +26,7 @@ def generateBoard():
         board.append(line)
     return board
 
-def run():
+def run(f,perceptions):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:
@@ -26,24 +34,17 @@ def run():
     - The id of the neighbor cells are defined for ; 0: north, 1: south, 2: west, 3: east, 4: current site
     - The actions based on the strategy are: 0: MoveNorth, 1: MoveSouth, 2: MoveWest, 3: MoveEast, 4: StayPut, 5: PickUp, 6: MoveRandom 
     """
+    writer = csv.writer(f)
+    timeStart = 0
+    timeStart = time.time()
     numberOfActions=200
     cleaningSessions=100
-    somelists=[[0,1,2] for i in range(5)] 
-    perceptions= [list(element) for element in itertools.product(*somelists)]
-    i=0
-    while i<len(perceptions):
-        c = 0
-        for status in perceptions[i]:
-            if status == 2:
-                c = c + 1
-                if c > 2 or perceptions[i][4] == 2:
-                    perceptions.remove(perceptions[i]) 
-        i=i+1
     firstStrategies = generateStrategies(200,len(perceptions))
     strategies= firstStrategies
     maxFitness=[]
     population=[]
     for generation in range(1000):
+        print("Starting generation ",generation)
         for strategy in strategies:
             fitness=0
             for sesion in range(cleaningSessions):
@@ -63,14 +64,21 @@ def run():
             population.append((strategy,fitness))
         population.sort(reverse=True,key=lambda y: y[1])
         maxFitness.append(population[0][1]) #for painting
+        writer.writerow([generation,population[0][0],population[0][1]])
         newStrategies=[]
+        fitnessValues=[population[i][1] for i in range(len(population))]
+        probabilities=getProbabilities(fitnessValues)
         while(len(newStrategies)<200):
-            father,mother=np.random.choice(population, 2, p=probabilities)
-            children = mate(father[0],mother[0])
+            parents=np.random.choice(len(population), 2, p=probabilities) 
+            father,mother = population[parents[0]],population[parents[1]]
+            children = mate(father[0],mother[0]) 
             newStrategies.append(children[0])
             newStrategies.append(children[1])
         strategies=newStrategies
         population=[]
+        print("Generation",generation,"=",maxFitness[generation])
+        print("Execution time: ", round(time.time() - timeStart, 4), "seconds")
+    f.close()    
 
 def getNorth(position,board):
     newPos = (position[0],position[1]-1)
@@ -84,12 +92,12 @@ def getSouth(position,board):
     return board[newPos[0]][newPos[1]]
 def getWest(position,board):
     newPos = (position[0]-1,position[1])
-    if(newPos[1]<0):
+    if(newPos[0]<0):
         return 2
     return board[newPos[0]][newPos[1]]
 def getEast(position,board):
     newPos = (position[0]+1,position[1])
-    if(newPos[1]>9):
+    if(newPos[0]>9):
         return 2
     return board[newPos[0]][newPos[1]]
 def getCurrent(position,board):
@@ -142,6 +150,37 @@ def mate(father,mother):
         if(random.random()<0.01): # Mutation
             children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
     return children
+def getProbabilities(fitnessValues):
+    maxValue=max(fitnessValues)
+    minValue=min(fitnessValues)
+    normalized = list(
+        map(
+            lambda x: (x - minValue) / (maxValue - minValue),
+            fitnessValues
+        )
+    )
+    total = sum(normalized)
+    probabilities=list(map(lambda x: x/total, normalized))
+    print(sum(probabilities))
+    probabilities.sort(reverse=True)
+    return probabilities
 
+def plotFitnes (fitnesScore):
+    generation = [fitnesScore.index(n) + 1 for n in fitnesScore]
+
+    df = pd.DataFrame(dict(
+        Generation = generation,
+        y = fitnesScore
+    ))
+    fig = px.line(df, x="Generation", y="y", title="Fitness vs Generation", markers=True,
+                labels = {
+                    "y": "Best fitness in population"
+                }) 
+    fig.show()
+
+plotFitnes(fitnesScore)
 if __name__ == '__main__':
-    run()
+    f = open("generationData.csv","w")
+    somelists=[[0,1,2] for i in range(5)] 
+    perceptions= [list(element) for element in itertools.product(*somelists)]
+    run(f,perceptions)
