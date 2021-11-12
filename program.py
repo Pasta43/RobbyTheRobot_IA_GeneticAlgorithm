@@ -26,7 +26,7 @@ def generateBoard():
         board.append(line)
     return board
 
-def run(f,perceptions):
+def run(f,perceptions,mutationFunction=defaultMutation):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:
@@ -71,7 +71,7 @@ def run(f,perceptions):
         while(len(newStrategies)<200):
             parents=np.random.choice(len(population), 2, p=probabilities) 
             father,mother = population[parents[0]],population[parents[1]]
-            children = mate(father[0],mother[0]) 
+            children = mate(father[0],mother[0],mutationFunction) 
             newStrategies.append(children[0])
             newStrategies.append(children[1])
         strategies=newStrategies
@@ -139,16 +139,14 @@ def applyAction(action,fitness,board,position):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position)
     return (fitness,board,newPos)
-def mate(father,mother):
+def mate(father,mother,mutationFunction=defaultMutation):
     genXY,genXX=father,mother
     num=random.randint(0,len(father)-1)
     children=[
         genXY[:num]+genXX[num:],
         genXX[:num]+genXY[num:]
     ]
-    for i in range(len(children)):
-        if(random.random()<0.01): # Mutation
-            children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
+    children=mutationFunction(children)
     return children
 def getProbabilities(fitnessValues):
     maxValue=max(fitnessValues)
@@ -164,7 +162,11 @@ def getProbabilities(fitnessValues):
     print(sum(probabilities))
     probabilities.sort(reverse=True)
     return probabilities
-
+def defaultMutation(children):
+    for i in range(len(children)):
+        if(random.random()<0.01): # Mutation
+            children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
+    return children
 def plotFitnes (fitnesScore):
     generation = [fitnesScore.index(n) + 1 for n in fitnesScore]
 
