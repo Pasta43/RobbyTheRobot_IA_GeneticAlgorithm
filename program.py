@@ -5,13 +5,62 @@ import time
 import csv
 import plotly.express as px
 import pandas as pd
-
+import concurrent.futures
 
 
 start=(0,0)
-
-
-
+def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
+    fitness=0
+    for sesion in range(numberOfSessions):
+        position=list(start)  
+        board = generateBoard()     
+        for iteration in range(numberOfActions):
+            actualPerception=[getNorth(position,board),
+                            getSouth(position,board),
+                            getWest(position,board),
+                            getEast(position,board),
+                            getCurrent(position,board)
+                            ]
+            status=perceptions.index(actualPerception)
+            action=strategy[status]
+            fitness,board,position= applyAction(action,fitness,board,position)
+    return fitness
+def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
+    fitness=0
+    numberOfThreads =50 # This must be divisor of cleaningSessions 
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        results= [executor.submit(getFitnessFromNumberOfSesions,
+         strategy,
+         int(cleaningSessions/numberOfThreads),
+                numberOfActions,
+                perceptions
+                ) for _ in range(numberOfThreads)]
+        for f in concurrent.futures.as_completed(results):
+            fitness+=f.result()
+    fitness/=cleaningSessions
+    return fitness
+def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
+    population=[]
+    for strategy in strategies:
+        fitness = getFitness(strategy,cleaningSessions,numberOfActions,perceptions)
+        population.append((strategy,fitness))
+    return population
+def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
+    division=4
+    with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
+        lenStrategies=len(strategies)
+        someStrategies=[]
+        for i in range(division):
+            someStrategies.append(strategies[int(i*lenStrategies/division):int((i+1)*lenStrategies/division)])
+        results = [executor.submit(trySomeStrategies,someStrategies[i],cleaningSessions,numberOfActions,perceptions) for i in range(division)]
+        for f in concurrent.futures.as_completed(results):
+            population+=f.result()
+    return population
+def defaultMutation(children):
+    for i in range(len(children)):
+        if(random.random()<0.01): # Mutation
+            children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
+    return children
 def generateStrategies(n,length):
     strategies=[]
     for strategy in range(n):
@@ -33,6 +82,8 @@ def run(f,perceptions,mutationFunction=defaultMutation):
     - The status of the cell is defined for the numbers  0: empty, 1: can: 2: wall
     - The id of the neighbor cells are defined for ; 0: north, 1: south, 2: west, 3: east, 4: current site
     - The actions based on the strategy are: 0: MoveNorth, 1: MoveSouth, 2: MoveWest, 3: MoveEast, 4: StayPut, 5: PickUp, 6: MoveRandom 
+    
+    To improve the performance, it uses multiprocessing and threads. It will consume a lot of memory and CPU 
     """
     writer = csv.writer(f)
     timeStart = 0
@@ -40,36 +91,24 @@ def run(f,perceptions,mutationFunction=defaultMutation):
     numberOfActions=200
     cleaningSessions=100
     firstStrategies = generateStrategies(200,len(perceptions))
+    print(f"""Robby the robot - Genetic algorithm
+    
+    With size gene of {len(perceptions)} \n""")
     strategies= firstStrategies
     maxFitness=[]
     population=[]
     for generation in range(1000):
         print("Starting generation ",generation)
-        for strategy in strategies:
-            fitness=0
-            for sesion in range(cleaningSessions):
-                position=list(start)  
-                board = generateBoard()     
-                for iteration in range(numberOfActions):
-                    actualPerception=[getNorth(position,board),
-                                    getSouth(position,board),
-                                    getWest(position,board),
-                                    getEast(position,board),
-                                    getCurrent(position,board)
-                                    ]
-                    status=perceptions.index(actualPerception)
-                    action=strategy[status]
-                    fitness,board,position= applyAction(action,fitness,board,position)
-            fitness/=cleaningSessions
-            population.append((strategy,fitness))
+        population = tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions)
         population.sort(reverse=True,key=lambda y: y[1])
         maxFitness.append(population[0][1]) #for painting
         writer.writerow([generation,population[0][0],population[0][1]])
         newStrategies=[]
-        fitnessValues=[population[i][1] for i in range(len(population))]
+        lengthPopulation = len(population)
+        fitnessValues=[population[i][1] for i in range(lengthPopulation)]
         probabilities=getProbabilities(fitnessValues)
         while(len(newStrategies)<200):
-            parents=np.random.choice(len(population), 2, p=probabilities) 
+            parents=np.random.choice(lengthPopulation, 2, p=probabilities) 
             father,mother = population[parents[0]],population[parents[1]]
             children = mate(father[0],mother[0],mutationFunction) 
             newStrategies.append(children[0])
@@ -159,14 +198,9 @@ def getProbabilities(fitnessValues):
     )
     total = sum(normalized)
     probabilities=list(map(lambda x: x/total, normalized))
-    print(sum(probabilities))
     probabilities.sort(reverse=True)
     return probabilities
-def defaultMutation(children):
-    for i in range(len(children)):
-        if(random.random()<0.01): # Mutation
-            children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
-    return children
+
 def plotFitnes (fitnesScore):
     generation = [fitnesScore.index(n) + 1 for n in fitnesScore]
 
@@ -179,8 +213,8 @@ def plotFitnes (fitnesScore):
                     "y": "Best fitness in population"
                 }) 
     fig.show()
+    plotFitnes(fitnesScore)
 
-plotFitnes(fitnesScore)
 if __name__ == '__main__':
     f = open("generationData.csv","w")
     somelists=[[0,1,2] for i in range(5)] 
