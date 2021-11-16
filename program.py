@@ -28,7 +28,7 @@ def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perc
 def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
     fitness=0
     numberOfThreads =50 # This must be divisor of cleaningSessions 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         results= [executor.submit(getFitnessFromNumberOfSesions,
          strategy,
          int(cleaningSessions/numberOfThreads),
@@ -46,7 +46,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=4
+    division=8
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
