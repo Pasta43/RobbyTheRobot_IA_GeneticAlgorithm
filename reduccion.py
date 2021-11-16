@@ -18,7 +18,7 @@ def removePerceptions(perceptions):
         if p in perceptions:
             perceptions.remove(p) 
     return perceptions
-    #aló PoLiSíA
+    
 
 
 
