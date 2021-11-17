@@ -11,20 +11,20 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
-    N=10
+    N=3
     for sesion in range(numberOfSessions):
         position=list(start)  
         board = generateBoard(N)     
         for iteration in range(numberOfActions):
-            actualPerception=[getNorth(position,board),
-                            getSouth(position,board),
-                            getWest(position,board),
-                            getEast(position,board),
-                            getCurrent(position,board)
+            actualPerception=[getNorth(position,board,N),
+                            getSouth(position,board,N),
+                            getWest(position,board,N),
+                            getEast(position,board,N),
+                            getCurrent(position,board,N)
                             ]
             status=perceptions.index(actualPerception)
             action=strategy[status]
-            fitness,board,position= applyAction(action,fitness,board,position)
+            fitness,board,position= applyAction(action,fitness,board,position,N)
     return fitness
 def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
     fitness=0
@@ -47,7 +47,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=8
+    division=2
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
@@ -89,7 +89,7 @@ def run(f,perceptions,mutationFunction=defaultMutation):
     writer = csv.writer(f)
     timeStart = 0
     timeStart = time.time()
-    numberOfActions=200
+    numberOfActions=100
     cleaningSessions=100
     firstStrategies = generateStrategies(200,len(perceptions))
     print(f"""Robby the robot - Genetic algorithm
@@ -120,32 +120,32 @@ def run(f,perceptions,mutationFunction=defaultMutation):
         print("Execution time: ", round(time.time() - timeStart, 4), "seconds")
     f.close()    
 
-def getNorth(position,board):
+def getNorth(position,board,N):
     newPos = (position[0],position[1]-1)
     if(newPos[1]<0):
         return 2
     return board[newPos[0]][newPos[1]]
-def getSouth(position,board):
+def getSouth(position,board,N):
     newPos = (position[0],position[1]+1)
-    if(newPos[1]>9):
+    if(newPos[1]>N-1):
         return 2
     return board[newPos[0]][newPos[1]]
-def getWest(position,board):
+def getWest(position,board,N):
     newPos = (position[0]-1,position[1])
     if(newPos[0]<0):
         return 2
     return board[newPos[0]][newPos[1]]
-def getEast(position,board):
+def getEast(position,board,N):
     newPos = (position[0]+1,position[1])
-    if(newPos[0]>9):
+    if(newPos[0]>N-1):
         return 2
     return board[newPos[0]][newPos[1]]
-def getCurrent(position,board):
-    if(position[0]>9 or position[1]>9 or position[0]<0 or position[1]<0):
+def getCurrent(position,board,N):
+    if(position[0]>N-1 or position[1]>N-1 or position[0]<0 or position[1]<0):
         return 2
     return board[position[0]][position[1]]
 
-def applyAction(action,fitness,board,position):
+def applyAction(action,fitness,board,position,N):
     if action==0:
         newPos=(position[0],position[1]-1)
         if(newPos[1]<0):
@@ -153,7 +153,7 @@ def applyAction(action,fitness,board,position):
             newPos = position
     elif action==1:
         newPos=(position[0],position[1]+1)
-        if(newPos[1]>9):
+        if(newPos[1]>N-1):
             fitness-=5
             newPos = position
     elif action==2:
@@ -163,7 +163,7 @@ def applyAction(action,fitness,board,position):
             newPos = position
     elif action==3:
         newPos = (position[0]+1,position[1])
-        if(newPos[0]>9):
+        if(newPos[0]>N-1):
             fitness-=5
             newPos = position
     elif action==4:
@@ -177,7 +177,7 @@ def applyAction(action,fitness,board,position):
             fitness-=1
     elif action==6:
         randAction = random.randint(0,3)
-        return applyAction(randAction,fitness,board,position)
+        return applyAction(randAction,fitness,board,position,N)
     return (fitness,board,newPos)
 def mate(father,mother,mutationFunction=defaultMutation):
     genXY,genXX=father,mother
