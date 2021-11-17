@@ -11,9 +11,10 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
+    N=10
     for sesion in range(numberOfSessions):
         position=list(start)  
-        board = generateBoard()     
+        board = generateBoard(N)     
         for iteration in range(numberOfActions):
             actualPerception=[getNorth(position,board),
                             getSouth(position,board),
@@ -67,11 +68,11 @@ def generateStrategies(n,length):
         randomlist = [random.randint(0,6)  for number in range(length)]
         strategies.append(randomlist)
     return strategies
-def generateBoard():
+def generateBoard(N):
     board=[]
     putCan = lambda : int(random.random()>0.5)
-    for i in range(10):
-        line = [putCan() for j in range(10)]
+    for i in range(N):
+        line = [putCan() for j in range(N)]
         board.append(line)
     return board
 
