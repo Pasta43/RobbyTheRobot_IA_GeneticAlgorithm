@@ -75,8 +75,16 @@ def generateBoard(N):
         line = [putCan() for j in range(N)]
         board.append(line)
     return board
+def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction):
+    while(len(newStrategies)<200):
+            parents=np.random.choice(lengthPopulation, 2, p=probabilities) 
+            father,mother = population[parents[0]],population[parents[1]]
+            children = mate(father[0],mother[0],mutationFunction) 
+            newStrategies.append(children[0])
+            newStrategies.append(children[1])
+    return newStrategies
 
-def run(f,perceptions,mutationFunction=defaultMutation):
+def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:
@@ -108,13 +116,7 @@ def run(f,perceptions,mutationFunction=defaultMutation):
         lengthPopulation = len(population)
         fitnessValues=[population[i][1] for i in range(lengthPopulation)]
         probabilities=getProbabilities(fitnessValues)
-        while(len(newStrategies)<200):
-            parents=np.random.choice(lengthPopulation, 2, p=probabilities) 
-            father,mother = population[parents[0]],population[parents[1]]
-            children = mate(father[0],mother[0],mutationFunction) 
-            newStrategies.append(children[0])
-            newStrategies.append(children[1])
-        strategies=newStrategies
+        strategies=generateNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction)
         population=[]
         print("Generation",generation,"=",maxFitness[generation])
         print("Execution time: ", round(time.time() - timeStart, 4), "seconds")
