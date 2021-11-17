@@ -75,7 +75,16 @@ def generateBoard(N):
         line = [putCan() for j in range(N)]
         board.append(line)
     return board
-def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction):
+def mate(father,mother,mutationFunction=defaultMutation):
+    genXY,genXX=father,mother
+    num=random.randint(0,len(father)-1)
+    children=[
+        genXY[:num]+genXX[num:],
+        genXX[:num]+genXY[num:]
+    ]
+    children=mutationFunction(children)
+    return children
+def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction,mate=mate):
     while(len(newStrategies)<200):
             parents=np.random.choice(lengthPopulation, 2, p=probabilities) 
             father,mother = population[parents[0]],population[parents[1]]
@@ -84,7 +93,7 @@ def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population
             newStrategies.append(children[1])
     return newStrategies
 
-def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation):
+def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:
@@ -116,7 +125,7 @@ def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=def
         lengthPopulation = len(population)
         fitnessValues=[population[i][1] for i in range(lengthPopulation)]
         probabilities=getProbabilities(fitnessValues)
-        strategies=generateNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction)
+        strategies=generateNewPopulation(newStrategies,lengthPopulation,probabilities,population,mutationFunction,mate)
         population=[]
         print("Generation",generation,"=",maxFitness[generation])
         print("Execution time: ", round(time.time() - timeStart, 4), "seconds")
@@ -181,15 +190,6 @@ def applyAction(action,fitness,board,position,N):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position,N)
     return (fitness,board,newPos)
-def mate(father,mother,mutationFunction=defaultMutation):
-    genXY,genXX=father,mother
-    num=random.randint(0,len(father)-1)
-    children=[
-        genXY[:num]+genXX[num:],
-        genXX[:num]+genXY[num:]
-    ]
-    children=mutationFunction(children)
-    return children
 def getProbabilities(fitnessValues):
     maxValue=max(fitnessValues)
     minValue=min(fitnessValues)
