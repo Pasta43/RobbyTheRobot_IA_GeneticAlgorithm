@@ -92,7 +92,20 @@ def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population
             newStrategies.append(children[0])
             newStrategies.append(children[1])
     return newStrategies
-
+def getProbabilities(fitnessValues):
+    maxValue=max(fitnessValues)
+    minValue=min(fitnessValues)
+    normalized = list(
+        map(
+            lambda x: (x - minValue) / (maxValue - minValue),
+            fitnessValues
+        )
+    )
+    total = sum(normalized)
+    probabilities=list(map(lambda x: x/total, normalized))
+    probabilities.sort(reverse=True)
+    return probabilities
+    
 def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate,getProbabilities=getProbabilities):
     """
     Main function
@@ -190,19 +203,7 @@ def applyAction(action,fitness,board,position,N):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position,N)
     return (fitness,board,newPos)
-def getProbabilities(fitnessValues):
-    maxValue=max(fitnessValues)
-    minValue=min(fitnessValues)
-    normalized = list(
-        map(
-            lambda x: (x - minValue) / (maxValue - minValue),
-            fitnessValues
-        )
-    )
-    total = sum(normalized)
-    probabilities=list(map(lambda x: x/total, normalized))
-    probabilities.sort(reverse=True)
-    return probabilities
+
 
 def plotFitnes (fitnesScore):
     generation = [fitnesScore.index(n) + 1 for n in fitnesScore]
