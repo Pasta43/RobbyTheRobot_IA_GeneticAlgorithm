@@ -11,7 +11,7 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
-    N=3
+    N=4
     for sesion in range(numberOfSessions):
         position=list(start)  
         board = generateBoard(N)     
@@ -47,7 +47,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=2
+    division=8
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
