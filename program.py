@@ -93,7 +93,7 @@ def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population
             newStrategies.append(children[1])
     return newStrategies
 
-def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate):
+def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate,getProbabilities=getProbabilities):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:

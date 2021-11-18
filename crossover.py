@@ -1,5 +1,7 @@
 from program import defaultMutation,random,np,run,itertools
 from mutation import swapMutation
+from probabilities import squaredNormalizedProbabilities
+import math
 
 def divide_chunks(l, n):
     """
@@ -13,7 +15,7 @@ def divide_chunks(l, n):
 
 def multipleCrossover(father,mother,mutationFunction=defaultMutation):
     genY,genX = father,mother
-    nOfslices=random.randint(2,6)
+    nOfslices=random.randint(2,math.sqrt(len(father)))
     genYWithSlices = list(divide_chunks(genY,nOfslices))
     genXWithSlices = list(divide_chunks(genX,nOfslices))
     children=[[],[]]
@@ -33,4 +35,7 @@ if __name__ == '__main__':
     f = open("generationDataWithMultipleCrossover.csv","w")
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
-    run(f,perceptions,mutationFunction=swapMutation,mate=multipleCrossover)
+    run(f,perceptions,
+    mutationFunction=swapMutation,
+    mate=multipleCrossover,
+    getProbabilities=squaredNormalizedProbabilities)
