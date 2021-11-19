@@ -1,7 +1,7 @@
 from program import random
 def swapMutation(children):
-    if (random.random()<0.05):
-        indexToChange=(random.randint(0,len(children[0])-1),random.randint(0,len(children[0])-1))
-        children[0][indexToChange[0]],children[0][indexToChange[1]]=children[0][indexToChange[1]],children[0][indexToChange[0]]
-        children[1][indexToChange[0]],children[1][indexToChange[1]]=children[1][indexToChange[1]],children[1][indexToChange[0]]
+    for child in children:
+        if (random.random()<0.2):
+            indexToChange=(random.randint(0,len(child)-1),random.randint(0,len(child)-1))
+            child[indexToChange[0]],child[indexToChange[1]]=child[indexToChange[1]],child[indexToChange[0]]
     return children
