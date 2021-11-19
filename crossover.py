@@ -15,7 +15,7 @@ def divide_chunks(l, n):
 
 def multipleCrossover(father,mother,mutationFunction=defaultMutation):
     genY,genX = father,mother
-    nOfslices=random.randint(2,math.sqrt(len(father)))
+    nOfslices=random.randint(2,2*int(math.sqrt(len(father))))
     genYWithSlices = list(divide_chunks(genY,nOfslices))
     genXWithSlices = list(divide_chunks(genX,nOfslices))
     children=[[],[]]
