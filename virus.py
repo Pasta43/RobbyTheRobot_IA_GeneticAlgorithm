@@ -7,6 +7,7 @@ def virus(children):
         children[0][randomValue:randomValue+size]=viruses
         children[1][randomValue:randomValue+size]=viruses
     return children
+    
 if __name__=="__main__":
     f = open("dataGenerationWithVirus.csv","w")
     somelists=[[0,1,2] for i in range(5)] 

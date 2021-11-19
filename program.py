@@ -3,10 +3,9 @@ import itertools
 import numpy as np
 import time
 import csv
-import plotly.express as px
-import pandas as pd
+# import plotly.express as px
+# import pandas as pd
 import concurrent.futures
-
 
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
@@ -28,7 +27,7 @@ def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perc
     return fitness
 def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
     fitness=0
-    numberOfThreads =50 # This must be divisor of cleaningSessions 
+    numberOfThreads = 50 # This must be divisor of cleaningSessions 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results= [executor.submit(getFitnessFromNumberOfSesions,
          strategy,
@@ -47,7 +46,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=2
+    division=6
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
@@ -57,11 +56,13 @@ def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perc
         for f in concurrent.futures.as_completed(results):
             population+=f.result()
     return population
+
 def defaultMutation(children):
     for i in range(len(children)):
         if(random.random()<0.01): # Mutation
             children[i][random.randint(0,len(children[i])-1)]=random.randint(0,6)
     return children
+
 def generateStrategies(n,length):
     strategies=[]
     for strategy in range(n):
@@ -179,24 +180,25 @@ def applyAction(action,fitness,board,position,N):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position,N)
     return (fitness,board,newPos)
-def mate(father,mother,mutationFunction=defaultMutation):
-    genXY,genXX=father,mother
+
+def uniform_crossover(A, B, P):
+    for i in range(len(P)):
+        if P[i] < 0.3:
+            temp = A[i]
+            A[i] = B[i]
+            B[i] = temp 
+    return A, B
+
+def mate(father,mother,mutationFunction=defaultMutation, parentsConv = None):
     num=random.randint(0,len(father)-1)
-    children=[
-        genXY[:num]+genXX[num:],
-        genXX[:num]+genXY[num:]
-    ]
-    children=mutationFunction(children)
+    genXY,genXX=uniform_crossover(father,mother, np.random.rand(num))
+    children=[genXY,genXX]
+    children = mutationFunction(children)
     return children
 def getProbabilities(fitnessValues):
     maxValue=max(fitnessValues)
     minValue=min(fitnessValues)
-    normalized = list(
-        map(
-            lambda x: (x - minValue) / (maxValue - minValue),
-            fitnessValues
-        )
-    )
+    normalized = list(map(lambda x: (x-minValue)**2, fitnessValues))
     total = sum(normalized)
     probabilities=list(map(lambda x: x/total, normalized))
     probabilities.sort(reverse=True)
