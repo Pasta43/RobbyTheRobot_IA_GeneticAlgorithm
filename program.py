@@ -11,7 +11,7 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
-    N=4
+    N=10
     for sesion in range(numberOfSessions):
         position=list(start)  
         board = generateBoard(N)     
@@ -28,7 +28,7 @@ def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perc
     return fitness
 def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
     fitness=0
-    numberOfThreads =50 # This must be divisor of cleaningSessions 
+    numberOfThreads =cleaningSessions//10 + cleaningSessions%10# This must be divisor of cleaningSessions 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results= [executor.submit(getFitnessFromNumberOfSesions,
          strategy,

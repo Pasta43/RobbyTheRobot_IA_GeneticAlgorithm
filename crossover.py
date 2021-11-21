@@ -1,6 +1,7 @@
 from program import defaultMutation,random,np,run,itertools
-from mutation import swapMutation
+from mutation import inversion, newDefaultMutation, swapMutation
 from probabilities import squaredNormalizedProbabilities
+from reduccion import removePerceptions
 import math
 
 def divide_chunks(l, n):
@@ -35,7 +36,8 @@ if __name__ == '__main__':
     f = open("generationDataWithMultipleCrossover.csv","w")
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
+    perceptions = removePerceptions(perceptions)
     run(f,perceptions,
-    mutationFunction=swapMutation,
+    mutationFunction=inversion,
     mate=multipleCrossover,
     getProbabilities=squaredNormalizedProbabilities)
