@@ -11,7 +11,7 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
-    N=4
+    N=10
     for sesion in range(numberOfSessions):
         position=list(start)  
         board = generateBoard(N)     
