@@ -47,7 +47,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=6
+    division=2
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
@@ -120,7 +120,7 @@ def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=def
     timeStart = 0
     timeStart = time.time()
     numberOfActions=18
-    cleaningSessions=50
+    cleaningSessions=100
     firstStrategies = generateStrategies(200,len(perceptions))
     print(f"""Robby the robot - Genetic algorithm
     
