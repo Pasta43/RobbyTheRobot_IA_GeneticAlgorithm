@@ -14,7 +14,9 @@ def newDefaultMutation(children):
 def inversion(children):
     for child in children:
         if (random.random()<0.05):
-            value=random.randint(0,len(child)//2)
-            interval=(value,value+random.randint(0,child//2))
-            child[interval[0]:interval[1]]=child[interval[1]-1:interval[0]-1]
+            value=random.randint(1,(len(child)-1)//2)
+            interval=(value,value+random.randint(0,(len(child)-1)//2))
+            child[interval[0]:interval[1]]=child[interval[1]-1:interval[0]-1:-1]
+            if(len(child)<144):
+                print(interval)
     return children
