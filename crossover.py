@@ -27,6 +27,8 @@ def multipleCrossover(father,mother,mutationFunction=defaultMutation):
         else:
             children[0]+=genYWithSlices[i]
             children[1]+=genXWithSlices[i]
+    if len(children[0]) < 144:
+        print(children)
     children=mutationFunction(children)
     return children
 
@@ -37,6 +39,6 @@ if __name__ == '__main__':
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
     run(f,perceptions,
-    mutationFunction=inversion,
+    mutationFunction=swapMutation,
     mate=multipleCrossover,
     getProbabilities=squaredNormalizedProbabilities)

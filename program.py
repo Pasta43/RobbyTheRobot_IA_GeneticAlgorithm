@@ -47,7 +47,7 @@ def trySomeStrategies(strategies,cleaningSessions,numberOfActions,perceptions):
         population.append((strategy,fitness))
     return population
 def tryAllStrategies(strategies,population,cleaningSessions,numberOfActions,perceptions):
-    division=2
+    division=6
     with concurrent.futures.ProcessPoolExecutor(max_workers=division) as executor:
         lenStrategies=len(strategies)
         someStrategies=[]
@@ -119,8 +119,8 @@ def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=def
     writer = csv.writer(f)
     timeStart = 0
     timeStart = time.time()
-    numberOfActions=32
-    cleaningSessions=100
+    numberOfActions=18
+    cleaningSessions=50
     firstStrategies = generateStrategies(200,len(perceptions))
     print(f"""Robby the robot - Genetic algorithm
     
