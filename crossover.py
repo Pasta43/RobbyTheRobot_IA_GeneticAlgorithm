@@ -36,7 +36,6 @@ if __name__ == '__main__':
     f = open("generationDataWithMultipleCrossover.csv","w")
     somelists=[[0,1,2] for i in range(5)] 
     perceptions= [list(element) for element in itertools.product(*somelists)]
-    perceptions = removePerceptions(perceptions)
     run(f,perceptions,
     mutationFunction=inversion,
     mate=multipleCrossover,
