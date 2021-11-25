@@ -11,7 +11,7 @@ import concurrent.futures
 start=(0,0)
 def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perceptions):
     fitness=0
-    N=3
+    N=10
     for sesion in range(numberOfSessions):
         position=list(start)  
         board = generateBoard(N)     
@@ -28,7 +28,7 @@ def getFitnessFromNumberOfSesions(strategy,numberOfSessions,numberOfActions,perc
     return fitness
 def getFitness(strategy,cleaningSessions,numberOfActions,perceptions):
     fitness=0
-    numberOfThreads =50 # This must be divisor of cleaningSessions 
+    numberOfThreads =100# This must be divisor of cleaningSessions 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results= [executor.submit(getFitnessFromNumberOfSesions,
          strategy,
@@ -92,8 +92,21 @@ def defaultNewPopulation(newStrategies,lengthPopulation,probabilities,population
             newStrategies.append(children[0])
             newStrategies.append(children[1])
     return newStrategies
+def getProbabilities(fitnessValues):
+    maxValue=max(fitnessValues)
+    minValue=min(fitnessValues)
+    normalized = list(
+        map(
+            lambda x: (x - minValue) / (maxValue - minValue),
+            fitnessValues
+        )
+    )
+    total = sum(normalized)
+    probabilities=list(map(lambda x: x/total, normalized))
+    probabilities.sort(reverse=True)
+    return probabilities
 
-def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate):
+def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=defaultNewPopulation,mate=mate,getProbabilities=getProbabilities):
     """
     Main function
     It considers the following aspects to execute the genetic algorithm:
@@ -106,7 +119,7 @@ def run(f,perceptions,mutationFunction=defaultMutation,generateNewPopulation=def
     writer = csv.writer(f)
     timeStart = 0
     timeStart = time.time()
-    numberOfActions=100
+    numberOfActions=18
     cleaningSessions=100
     firstStrategies = generateStrategies(200,len(perceptions))
     print(f"""Robby the robot - Genetic algorithm
@@ -190,19 +203,7 @@ def applyAction(action,fitness,board,position,N):
         randAction = random.randint(0,3)
         return applyAction(randAction,fitness,board,position,N)
     return (fitness,board,newPos)
-def getProbabilities(fitnessValues):
-    maxValue=max(fitnessValues)
-    minValue=min(fitnessValues)
-    normalized = list(
-        map(
-            lambda x: (x - minValue) / (maxValue - minValue),
-            fitnessValues
-        )
-    )
-    total = sum(normalized)
-    probabilities=list(map(lambda x: x/total, normalized))
-    probabilities.sort(reverse=True)
-    return probabilities
+
 
 def plotFitnes (fitnesScore):
     generation = [fitnesScore.index(n) + 1 for n in fitnesScore]
